@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useMachine } from "@xstate/react";
 import styled from "styled-components";
+import noteTrainerMachine from "./note-trainer.fsm";
 
 const Card = styled.div`
   border-radius: var(--spacing-s);
@@ -21,34 +22,13 @@ const NoteDisplayText = styled.div`
   font-size: 6rem;
 `;
 
-const notes = ["A", "B", "C", "D", "E", "F", "G"];
-const strings = ["E", "A", "D", "G", "B", "E"];
-
-const generateRandomIndex = (arrayLength) => {
-  return Math.floor(Math.random() * arrayLength);
-};
-
-const generateNonRepeatedIndex = (previousIndex, array) => {
-  let newIndex = generateRandomIndex(array.length);
-  while (newIndex === previousIndex) {
-    newIndex = generateRandomIndex(array.length);
-  }
-  return newIndex;
-};
-
 const NoteTrainer = () => {
-  const [currentString, setString] = useState(5);
-  const [currentNote, setNote] = useState(1);
-
-  const chooseNextString = () => {
-    setString((previousIndex) =>
-      generateNonRepeatedIndex(previousIndex, strings)
-    );
-  };
-
-  const chooseNextNote = () => {
-    setNote((previousIndex) => generateNonRepeatedIndex(previousIndex, notes));
-  };
+  const [
+    {
+      context: { notes, strings, noteIndex, stringIndex },
+    },
+    send,
+  ] = useMachine(noteTrainerMachine);
 
   return (
     <Card>
@@ -57,17 +37,17 @@ const NoteTrainer = () => {
       <NoteContainer>
         <div>
           <h3>String</h3>
-          <NoteDisplayText>{strings[currentString]}</NoteDisplayText>
+          <NoteDisplayText>{strings[stringIndex]}</NoteDisplayText>
         </div>
         <div>
           <h3>Note</h3>
-          <NoteDisplayText>{notes[currentNote]}</NoteDisplayText>
+          <NoteDisplayText>{notes[noteIndex]}</NoteDisplayText>
         </div>
       </NoteContainer>
       <ControlsContainer>
         <h2>Controls</h2>
-        <button onClick={chooseNextString}>Next string</button>
-        <button onClick={chooseNextNote}>Next note</button>
+        <button onClick={() => send("NEXT_STRING")}>Next string</button>
+        <button onClick={() => send("NEXT_NOTE")}>Next note</button>
       </ControlsContainer>
     </Card>
   );
