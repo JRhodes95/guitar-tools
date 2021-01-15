@@ -25,17 +25,17 @@ const noteTrainerMachine = Machine(
       stringIndex: 0,
       timeElapsed: 0,
       interval: 100,
-      duration: 5000,
+      duration: 3000,
     },
     initial: "inactive",
     on: {
       RESET_TIMER: { actions: "resetTimer" },
+      NEXT_NOTE: { actions: "chooseNextNote" },
+      NEXT_STRING: { actions: "chooseNextString" },
     },
     states: {
       inactive: {
         on: {
-          NEXT_NOTE: { target: "inactive", actions: "chooseNextNote" },
-          NEXT_STRING: { target: "inactive", actions: "chooseNextString" },
           START_TIMER: {
             target: "timerActive",
             actions: ["chooseNextNote", "chooseNextString"],
@@ -58,7 +58,7 @@ const noteTrainerMachine = Machine(
         on: {
           "": {
             cond: "timerHasFinished",
-            target: "inactive",
+            actions: ["resetTimer", "chooseNextNote", "chooseNextString"],
           },
           TICK: { actions: "incrementTimer" },
           STOP_TIMER: { target: "inactive" },

@@ -61,12 +61,7 @@ const NoteTrainer = () => {
         >
           Stop timer
         </button>
-        <button
-          onClick={() => send("RESET_TIMER")}
-          disabled={timeElapsed === 0}
-        >
-          Reset timer
-        </button>
+        <button onClick={() => send("RESET_TIMER")}>Reset timer</button>
       </div>
     </Card>
   );
