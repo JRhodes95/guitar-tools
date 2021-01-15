@@ -15,38 +15,76 @@ const generateNonRepeatedIndex = (previousIndex, array) => {
   return newIndex;
 };
 
-const chooseNextNote = assign({
-  noteIndex: (context) => generateNonRepeatedIndex(context.noteIndex, notes),
-});
-
-const chooseNextString = assign({
-  stringIndex: (context) =>
-    generateNonRepeatedIndex(context.stringIndex, strings),
-});
-
 const noteTrainerMachine = Machine(
   {
     id: "noteTrainer",
-    initial: "inactive",
-    states: {
-      inactive: {
-        on: {
-          NEXT_NOTE: { target: "inactive", actions: "chooseNextNote" },
-          NEXT_STRING: { target: "inactive", actions: "chooseNextString" },
-        },
-      },
-    },
     context: {
       notes,
       strings,
       noteIndex: 0,
       stringIndex: 0,
+      timeElapsed: 0,
+      interval: 100,
+      duration: 5000,
+    },
+    initial: "inactive",
+    on: {
+      RESET_TIMER: { actions: "resetTimer" },
+    },
+    states: {
+      inactive: {
+        on: {
+          NEXT_NOTE: { target: "inactive", actions: "chooseNextNote" },
+          NEXT_STRING: { target: "inactive", actions: "chooseNextString" },
+          START_TIMER: {
+            target: "timerActive",
+            actions: ["chooseNextNote", "chooseNextString"],
+          },
+        },
+      },
+
+      timerActive: {
+        invoke: {
+          src: (context) => (sendEvent) => {
+            const interval = setInterval(() => {
+              sendEvent("TICK");
+            }, context.interval);
+
+            return () => {
+              clearInterval(interval);
+            };
+          },
+        },
+        on: {
+          "": {
+            cond: "timerHasFinished",
+            target: "inactive",
+          },
+          TICK: { actions: "incrementTimer" },
+          STOP_TIMER: { target: "inactive" },
+        },
+      },
     },
   },
   {
+    guards: {
+      timerHasFinished: (context) => context.timeElapsed >= context.duration,
+    },
     actions: {
-      chooseNextNote,
-      chooseNextString,
+      chooseNextNote: assign({
+        noteIndex: (context) =>
+          generateNonRepeatedIndex(context.noteIndex, notes),
+      }),
+      chooseNextString: assign({
+        stringIndex: (context) =>
+          generateNonRepeatedIndex(context.stringIndex, strings),
+      }),
+      incrementTimer: assign({
+        timeElapsed: (context) => context.timeElapsed + context.interval,
+      }),
+      resetTimer: assign({
+        timeElapsed: 0,
+      }),
     },
   }
 );

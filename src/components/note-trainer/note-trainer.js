@@ -23,12 +23,10 @@ const NoteDisplayText = styled.div`
 `;
 
 const NoteTrainer = () => {
-  const [
-    {
-      context: { notes, strings, noteIndex, stringIndex },
-    },
-    send,
-  ] = useMachine(noteTrainerMachine);
+  const [state, send] = useMachine(noteTrainerMachine);
+  const {
+    context: { notes, strings, noteIndex, stringIndex, timeElapsed },
+  } = state;
 
   return (
     <Card>
@@ -49,6 +47,27 @@ const NoteTrainer = () => {
         <button onClick={() => send("NEXT_STRING")}>Next string</button>
         <button onClick={() => send("NEXT_NOTE")}>Next note</button>
       </ControlsContainer>
+      <div>
+        <h2>{(timeElapsed / 1000).toFixed(1)}</h2>
+        <button
+          onClick={() => send("START_TIMER")}
+          disabled={state.matches("timerActive")}
+        >
+          Start timer
+        </button>
+        <button
+          onClick={() => send("STOP_TIMER")}
+          disabled={state.matches("inactive")}
+        >
+          Stop timer
+        </button>
+        <button
+          onClick={() => send("RESET_TIMER")}
+          disabled={timeElapsed === 0}
+        >
+          Reset timer
+        </button>
+      </div>
     </Card>
   );
 };
