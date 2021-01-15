@@ -59,13 +59,11 @@ const noteTrainerMachine = Machine(
             };
           },
         },
+        always: {
+          cond: "timerHasFinished",
+          actions: ["resetTimer", "chooseNextNote", "chooseNextString"],
+        },
         on: {
-          "": [
-            {
-              cond: "timerHasFinished",
-              actions: ["resetTimer", "chooseNextNote", "chooseNextString"],
-            },
-          ],
           TICK: { actions: "incrementTimer" },
           STOP_TIMER: { target: "inactive" },
         },
