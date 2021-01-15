@@ -15,15 +15,19 @@ const NoteContainer = styled.div`
   text-align: center;
 `;
 
-const ControlsContainer = styled.div``;
-
 const NoteDisplayText = styled.div`
   font-weight: bold;
   font-size: 6rem;
 `;
 
+const TimerDisplay = styled.div`
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 4rem;
+`;
+
 const NoteTrainer = () => {
-  const [state, send] = useMachine(noteTrainerMachine);
+  const [state, send] = useMachine(noteTrainerMachine, { devTools: true });
   const {
     context: {
       notes,
@@ -33,6 +37,7 @@ const NoteTrainer = () => {
       noteLock,
       stringLock,
       timeElapsed,
+      duration,
     },
   } = state;
 
@@ -47,6 +52,9 @@ const NoteTrainer = () => {
             {stringLock ? "Unlock String" : "Lock String"}
           </button>
           <NoteDisplayText>{strings[stringIndex]}</NoteDisplayText>
+          <button onClick={() => send("NEXT_STRING")} disabled={stringLock}>
+            Next string
+          </button>
         </div>
         <div>
           <h3>Note</h3>
@@ -54,19 +62,36 @@ const NoteTrainer = () => {
             {noteLock ? "Unlock Note" : "Lock Note"}
           </button>
           <NoteDisplayText>{notes[noteIndex]}</NoteDisplayText>
+          <button onClick={() => send("NEXT_NOTE")} disabled={noteLock}>
+            Next note
+          </button>
         </div>
       </NoteContainer>
-      <ControlsContainer>
-        <h2>Controls</h2>
-        <button onClick={() => send("NEXT_STRING")} disabled={stringLock}>
-          Next string
-        </button>
-        <button onClick={() => send("NEXT_NOTE")} disabled={noteLock}>
-          Next note
-        </button>
-      </ControlsContainer>
       <div>
-        <h2>{(timeElapsed / 1000).toFixed(1)}</h2>
+        <h2>Controls</h2>
+        <label htmlFor="duration-select">Timer duration:</label>
+        <select
+          name="duration"
+          id="duration-select"
+          value={duration}
+          onChange={(event) =>
+            send({ type: "SET_DURATION", value: parseInt(event.target.value) })
+          }
+        >
+          <option value={1000}>1.0</option>
+          <option value={2000}>2.0</option>
+          <option value={3000}>3.0</option>
+          <option value={4000}>4.0</option>
+          <option value={5000}>5.0</option>
+          <option value={6000}>6.0</option>
+          <option value={7000}>7.0</option>
+          <option value={8000}>8.0</option>
+          <option value={9000}>9.0</option>
+          <option value={10000}>10.0</option>
+        </select>
+        <TimerDisplay>{`${((duration - timeElapsed) / 1000).toFixed(
+          1
+        )} s`}</TimerDisplay>
         <button
           onClick={() => send("START_TIMER")}
           disabled={state.matches("timerActive")}
@@ -79,7 +104,12 @@ const NoteTrainer = () => {
         >
           Stop timer
         </button>
-        <button onClick={() => send("RESET_TIMER")}>Reset timer</button>
+        <button
+          onClick={() => send("RESET_TIMER")}
+          disabled={state.matches("inactive") && timeElapsed === 0}
+        >
+          Reset timer
+        </button>
       </div>
     </Card>
   );

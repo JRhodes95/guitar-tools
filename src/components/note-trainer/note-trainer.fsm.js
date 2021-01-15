@@ -36,6 +36,7 @@ const noteTrainerMachine = Machine(
       NEXT_STRING: { actions: "chooseNextString" },
       TOGGLE_NOTE_LOCK: { actions: "toggleNoteLock" },
       TOGGLE_STRING_LOCK: { actions: "toggleStringLock" },
+      SET_DURATION: { actions: "setDuration" },
     },
     states: {
       inactive: {
@@ -100,6 +101,9 @@ const noteTrainerMachine = Machine(
       }),
       resetTimer: assign({
         timeElapsed: 0,
+      }),
+      setDuration: assign({
+        duration: (_context, event) => event.value,
       }),
     },
   }
