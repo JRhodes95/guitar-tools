@@ -23,6 +23,8 @@ const noteTrainerMachine = Machine(
       strings,
       noteIndex: 0,
       stringIndex: 0,
+      noteLock: false,
+      stringLock: false,
       timeElapsed: 0,
       interval: 100,
       duration: 3000,
@@ -32,6 +34,8 @@ const noteTrainerMachine = Machine(
       RESET_TIMER: { actions: "resetTimer" },
       NEXT_NOTE: { actions: "chooseNextNote" },
       NEXT_STRING: { actions: "chooseNextString" },
+      TOGGLE_NOTE_LOCK: { actions: "toggleNoteLock" },
+      TOGGLE_STRING_LOCK: { actions: "toggleStringLock" },
     },
     states: {
       inactive: {
@@ -56,10 +60,12 @@ const noteTrainerMachine = Machine(
           },
         },
         on: {
-          "": {
-            cond: "timerHasFinished",
-            actions: ["resetTimer", "chooseNextNote", "chooseNextString"],
-          },
+          "": [
+            {
+              cond: "timerHasFinished",
+              actions: ["resetTimer", "chooseNextNote", "chooseNextString"],
+            },
+          ],
           TICK: { actions: "incrementTimer" },
           STOP_TIMER: { target: "inactive" },
         },
@@ -69,15 +75,27 @@ const noteTrainerMachine = Machine(
   {
     guards: {
       timerHasFinished: (context) => context.timeElapsed >= context.duration,
+      stringIsLocked: (context) => context.stringLock === true,
+      noteIsLocked: (context) => context.noteLock === true,
     },
     actions: {
       chooseNextNote: assign({
         noteIndex: (context) =>
-          generateNonRepeatedIndex(context.noteIndex, notes),
+          context.noteLock
+            ? context.noteIndex
+            : generateNonRepeatedIndex(context.noteIndex, notes),
       }),
       chooseNextString: assign({
         stringIndex: (context) =>
-          generateNonRepeatedIndex(context.stringIndex, strings),
+          context.stringLock
+            ? context.stringIndex
+            : generateNonRepeatedIndex(context.stringIndex, strings),
+      }),
+      toggleStringLock: assign({
+        stringLock: (context) => !context.stringLock,
+      }),
+      toggleNoteLock: assign({
+        noteLock: (context) => !context.noteLock,
       }),
       incrementTimer: assign({
         timeElapsed: (context) => context.timeElapsed + context.interval,

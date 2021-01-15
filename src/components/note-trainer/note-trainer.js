@@ -25,7 +25,15 @@ const NoteDisplayText = styled.div`
 const NoteTrainer = () => {
   const [state, send] = useMachine(noteTrainerMachine);
   const {
-    context: { notes, strings, noteIndex, stringIndex, timeElapsed },
+    context: {
+      notes,
+      strings,
+      noteIndex,
+      stringIndex,
+      noteLock,
+      stringLock,
+      timeElapsed,
+    },
   } = state;
 
   return (
@@ -35,17 +43,27 @@ const NoteTrainer = () => {
       <NoteContainer>
         <div>
           <h3>String</h3>
+          <button onClick={() => send("TOGGLE_STRING_LOCK")}>
+            {stringLock ? "Unlock String" : "Lock String"}
+          </button>
           <NoteDisplayText>{strings[stringIndex]}</NoteDisplayText>
         </div>
         <div>
           <h3>Note</h3>
+          <button onClick={() => send("TOGGLE_NOTE_LOCK")}>
+            {noteLock ? "Unlock Note" : "Lock Note"}
+          </button>
           <NoteDisplayText>{notes[noteIndex]}</NoteDisplayText>
         </div>
       </NoteContainer>
       <ControlsContainer>
         <h2>Controls</h2>
-        <button onClick={() => send("NEXT_STRING")}>Next string</button>
-        <button onClick={() => send("NEXT_NOTE")}>Next note</button>
+        <button onClick={() => send("NEXT_STRING")} disabled={stringLock}>
+          Next string
+        </button>
+        <button onClick={() => send("NEXT_NOTE")} disabled={noteLock}>
+          Next note
+        </button>
       </ControlsContainer>
       <div>
         <h2>{(timeElapsed / 1000).toFixed(1)}</h2>
