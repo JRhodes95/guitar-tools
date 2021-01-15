@@ -1,4 +1,3 @@
-import React from "react";
 import { inspect } from "@xstate/inspect";
 
 const DevTools = () => {
